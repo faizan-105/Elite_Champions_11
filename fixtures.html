@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UEFA Champions Fantasy - Fixtures</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0a1633;
+      --card:#13254d;
+      --accent:#1e90ff;
+      --muted:#a8b4cc;
+      --radius:14px;
+      font-family:'Inter',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    }
+    *{box-sizing:border-box}
+    body {
+      margin:0;
+      background:radial-gradient(ellipse at top,#101f44 0%,#060d1e 80%);
+      color:#f8faff;
+      padding:20px;
+      overflow-x:hidden;
+      min-height: 100vh;
+    }
+    header {
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:24px;
+    }
+    .logo {font-weight:700;font-size:22px;color:var(--accent);margin-right: 20px;}
+    .main-nav {
+        display: flex;
+        flex-grow: 1;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    .auth-nav {
+        display: flex;
+        gap: 10px;
+    }
+    nav a {text-decoration:none;color:var(--muted);margin-left:16px;font-weight:600;cursor:pointer;transition:color .3s;}
+    nav a:hover { color: #fff; }
+    nav a.active {color:var(--accent);}
+    /* Card, Button, Table styles */
+    .card {
+      background:var(--card);
+      padding:16px;
+      border-radius:var(--radius);
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);
+      margin-bottom:20px;
+    }
+    .card h3,h2{margin-top:0;color:var(--accent)}
+    table{width:100%;border-collapse:collapse;color:inherit}
+    th,td{padding:10px 8px;text-align:left}
+    tr+tr td{border-top:1px solid rgba(255,255,255,0.1)}
+    .btn {background:var(--accent);color:white;padding:10px 16px;border:none;border-radius:var(--radius);font-weight:700;cursor:pointer;margin-top:10px;transition:background .3s;}
+    .btn:hover:not(:disabled) { background: #1871cc; }
+    .btn:disabled {opacity:0.5;cursor:not-allowed;}
+    
+    /* Highlighted fixture row (FR 8.2) */
+    tr.highlight-fixture {
+        background-color: rgba(30, 144, 255, 0.2); /* --accent with transparency */
+    }
+    tr.highlight-fixture td {
+        font-weight: 600;
+    }
+    
+    /* Responsive adjustment for small screens */
+    @media(max-width:900px){
+        header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .main-nav {
+            justify-content: space-around;
+            width: 100%;
+            order: 2;
+            margin-top: 10px;
+        }
+        .auth-nav {
+            order: 1;
+            align-self: flex-end;
+        }
+        nav a { margin: 0 5px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">UEFA Champions Fantasy</div>
+    <div class="main-nav">
+      <nav>
+        <a href="index.html">My Team</a>
+        <a href="fixtures.html" class="active">Fixtures</a>
+        <a href="stats.html">Player Stats</a>
+        <a href="transfers.html">Transfers</a>
+        <a href="leaderboard.html">Leaderboard</a>
+      </nav>
+    </div>
+    <div class="auth-nav">
+        <a href="login.html" class="btn" style="margin-top:0;padding:8px 12px;font-size:14px;">Log In</a>
+        <a href="signup.html" class="btn" style="margin-top:0;padding:8px 12px;font-size:14px;">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- Fixtures Page Content (FR 8.1) -->
+  <section id="page-fixtures">
+    <div class="card">
+      <h2>Upcoming Fixtures</h2>
+      <table id="fixtures-table">
+        <thead>
+          <tr><th>Date</th><th>Match</th><th>Time</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Nov 15</td><td class="match-name">Real Madrid vs PSG</td><td>20:00</td></tr>
+          <tr><td>Nov 16</td><td class="match-name">Man City vs Bayern</td><td>21:00</td></tr>
+          <tr><td>Nov 17</td><td class="match-name">Juventus vs Chelsea</td><td>20:00</td></tr>
+          <tr><td>Nov 18</td><td class="match-name">Barcelona vs Inter Milan</td><td>21:00</td></tr>
+          <tr><td>Nov 18</td><td class="match-name">Liverpool vs AC Milan</td><td>21:00</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    // --- Highlight Fixtures Logic (FR 8.2) ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const squad = JSON.parse(localStorage.getItem('fantasySquad')) || [];
+        if (squad.length === 0) {
+            return; // No squad, nothing to highlight
+        }
+
+        // Get a unique list of clubs from the squad
+        const squadClubs = [...new Set(squad.map(player => player.club))];
+
+        const fixtureRows = document.querySelectorAll('#fixtures-table tbody tr');
+
+        fixtureRows.forEach(row => {
+            const matchCell = row.querySelector('.match-name');
+            if (!matchCell) return;
+
+            const matchText = matchCell.textContent; // e.g., "Real Madrid vs PSG"
+            
+            // Check if any of the squad clubs are in this match text
+            const isMatchRelevant = squadClubs.some(club => matchText.includes(club));
+
+            if (isMatchRelevant) {
+                row.classList.add('highlight-fixture');
+            }
+        });
+    });
+  </script>
+
+</body>
+</html>

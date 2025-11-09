@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UEFA Champions Fantasy - Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0a1633;
+      --card:#13254d;
+      --accent:#1e90ff;
+      --muted:#a8b4cc;
+      --radius:14px;
+      font-family:'Inter',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    }
+    *{box-sizing:border-box}
+    body {
+      margin:0;
+      background:radial-gradient(ellipse at top,#101f44 0%,#060d1e 80%);
+      color:#f8faff;
+      padding:20px;
+      overflow-x:hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:24px;
+    }
+    .logo {font-weight:700;font-size:22px;color:var(--accent);margin-right: 20px;}
+    .auth-nav {
+        display: flex;
+        gap: 10px;
+    }
+    .btn {background:var(--accent);color:white;padding:10px 16px;border:none;border-radius:var(--radius);font-weight:700;cursor:pointer;transition:background .3s;}
+    .btn:hover:not(:disabled) { background: #1871cc; }
+
+    /* Auth Form Styles */
+    .auth-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex-grow: 1;
+        padding: 40px 20px;
+    }
+    .auth-card {
+        max-width: 400px;
+        width: 100%;
+        padding: 30px;
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    .auth-card h2 {
+        text-align: center;
+        margin-bottom: 24px;
+        color: var(--accent);
+    }
+    .form-group {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        background: rgba(0, 0, 0, 0.2);
+        color: white;
+        transition: border-color 0.3s;
+    }
+    .form-group input:focus {
+        border-color: var(--accent);
+        outline: none;
+    }
+    .form-submit-btn {
+        width: 100%;
+        margin-top: 20px;
+    }
+    .switch-link {
+        display: block;
+        text-align: center;
+        margin-top: 15px;
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+    .switch-link:hover {
+        color: var(--accent);
+        text-decoration: underline;
+    }
+
+    /* Validation Error Style */
+    .error-message {
+        color: #e57373; /* Light red */
+        font-size: 12px;
+        margin-top: 5px;
+        display: none; /* Hidden by default */
+    }
+    .form-group input.invalid {
+        border-color: #e57373;
+    }
+
+    @media(max-width:900px){
+        header {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .auth-nav a {
+          padding: 6px 10px;
+          font-size: 12px;
+        }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><a href="index.html" style="text-decoration: none; color: var(--accent);">UEFA Champions Fantasy</a></div>
+    <div class="auth-nav">
+        <a href="login.html" class="btn" style="margin-top:0;padding:8px 12px;font-size:14px;">Log In</a>
+    </div>
+  </header>
+
+  <div class="auth-container">
+    <div class="auth-card">
+      <h2>Create Your Account</h2>
+      <form id="signup-form" novalidate>
+        <div class="form-group">
+          <label for="signup-teamname">Team Name</label>
+          <input type="text" id="signup-teamname" required placeholder="The Galacticos">
+          <span class="error-message" id="team-error">Team name is required.</span>
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email Address</label>
+          <input type="email" id="signup-email" required placeholder="name@example.com">
+          <span class="error-message" id="email-error">Please enter a valid email address.</span>
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" required placeholder="Minimum 8 characters">
+          <span class="error-message" id="password-error">Password must be at least 8 characters.</span>
+        </div>
+        <div class="form-group">
+          <label for="signup-confirm-password">Confirm Password</label>
+          <input type="password" id="signup-confirm-password" required placeholder="Re-type password">
+          <span class="error-message" id="confirm-password-error">Passwords do not match.</span>
+        </div>
+        <button type="submit" class="btn form-submit-btn">Sign Up</button>
+      </form>
+      <a href="login.html" class="switch-link">Already have an account? Log In</a>
+      <a href="index.html" class="switch-link" style="margin-top: 20px;">&larr; Back to App</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('signup-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        let isValid = true;
+
+        const teamName = document.getElementById('signup-teamname');
+        const teamError = document.getElementById('team-error');
+        const email = document.getElementById('signup-email');
+        const emailError = document.getElementById('email-error');
+        const password = document.getElementById('signup-password');
+        const passwordError = document.getElementById('password-error');
+        const confirmPassword = document.getElementById('signup-confirm-password');
+        const confirmPasswordError = document.getElementById('confirm-password-error');
+
+        // Reset all errors
+        [teamName, email, password, confirmPassword].forEach(input => input.classList.remove('invalid'));
+        [teamError, emailError, passwordError, confirmPasswordError].forEach(error => error.style.display = 'none');
+
+        // Validate Team Name
+        if (teamName.value.trim() === '') {
+            isValid = false;
+            teamName.classList.add('invalid');
+            teamError.style.display = 'block';
+        }
+
+        // Validate Email
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (email.value.trim() === '' || !emailPattern.test(email.value)) {
+            isValid = false;
+            email.classList.add('invalid');
+            emailError.style.display = 'block';
+        }
+
+        // Validate Password
+        if (password.value.trim().length < 8) {
+            isValid = false;
+            password.classList.add('invalid');
+            passwordError.style.display = 'block';
+        }
+
+        // Validate Confirm Password
+        if (confirmPassword.value.trim() === '' || confirmPassword.value !== password.value) {
+            isValid = false;
+            confirmPassword.classList.add('invalid');
+            confirmPasswordError.style.display = 'block';
+        }
+
+        if (isValid) {
+            // In a real application, you would send data to a server here.
+            console.log('Sign up successful (simulated) for:', teamName.value, email.value);
+            
+            // --- NEW: Save team name to localStorage ---
+            localStorage.setItem('fantasyTeamName', teamName.value.trim());
+            // Clear any existing squad/budget from a previous "session"
+            localStorage.removeItem('fantasySquad');
+            localStorage.removeItem('fantasyBudget');
+            localStorage.removeItem('fantasyCaptain');
+
+            // Simulate a successful sign up and redirect
+            alert('Sign up successful! Redirecting to My Team...');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 1500);
+        }
+    });
+
+    // Custom alert replacement
+    function alert(message) {
+        let messageBox = document.getElementById('auth-message-box');
+        if (!messageBox) {
+            messageBox = document.createElement('div');
+            messageBox.id = 'auth-message-box';
+            messageBox.style.cssText = `
+                position: fixed; top: 20px; right: 20px;
+                background: var(--accent); color: white;
+                padding: 10px 20px; border-radius: var(--radius);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+                opacity: 0; transition: opacity 0.5s, transform 0.5s;
+                transform: translateY(-20px);
+                z-index: 101;
+            `;
+            document.body.appendChild(messageBox);
+        }
+        messageBox.textContent = message;
+        messageBox.style.opacity = 1;
+        messageBox.style.transform = 'translateY(0)';
+        setTimeout(() => {
+            messageBox.style.opacity = 0;
+            messageBox.style.transform = 'translateY(-20px)';
+        }, 3000);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UEFA Champions Fantasy - My Team</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0a1633;
+      --card:#13254d;
+      --accent:#1e90ff;
+      --muted:#a8b4cc;
+      --radius:14px;
+      --yellow: #ffeb3b;
+      font-family:'Inter',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    }
+    *{box-sizing:border-box}
+    body {
+      margin:0;
+      background:radial-gradient(ellipse at top,#101f44 0%,#060d1e 80%);
+      color:#f8faff;
+      padding:20px;
+      overflow-x:hidden;
+      min-height: 100vh;
+    }
+    header {
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:24px;
+    }
+    .logo {font-weight:700;font-size:22px;color:var(--accent);margin-right: 20px;}
+    .main-nav {
+        display: flex;
+        flex-grow: 1;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    .auth-nav {
+        display: flex;
+        gap: 10px;
+    }
+    nav a {text-decoration:none;color:var(--muted);margin-left:16px;font-weight:600;cursor:pointer;transition:color .3s;}
+    nav a:hover { color: #fff; }
+    nav a.active {color:var(--accent);}
+    /* Card, Button, Table styles */
+    .card {
+      background:var(--card);
+      padding:16px;
+      border-radius:var(--radius);
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);
+      margin-bottom:20px;
+    }
+    .card h3,h2{margin-top:0;color:var(--accent)}
+    table{width:100%;border-collapse:collapse;color:inherit}
+    th,td{padding:10px 8px;text-align:left}
+    tr+tr td{border-top:1px solid rgba(255,255,255,0.1)}
+    .btn {background:var(--accent);color:white;padding:10px 16px;border:none;border-radius:var(--radius);font-weight:700;cursor:pointer;margin-top:10px;transition:background .3s;}
+    .btn:hover:not(:disabled) { background: #1871cc; }
+    .btn:disabled {opacity:0.5;cursor:not-allowed;}
+    .pitch {
+      background:linear-gradient(180deg,#064b23,#0d7b3a);
+      border-radius:var(--radius);
+      position:relative;
+      height:600px;
+      overflow:hidden;
+    }
+    .player {
+      position:absolute;width:80px;height:100px;border-radius:12px;background:rgba(255,255,255,0.05);border:2px solid var(--accent);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:4px;font-weight:700;font-size:12px;text-align:center;cursor:pointer;transition:all .2s;
+    }
+    .player:hover {transform:scale(1.1);}
+    .player img {width:50px;height:50px;border-radius:50%;object-fit:cover;margin-bottom:4px;border:2px solid rgba(255,255,255,0.2);}
+    .formation{text-align:center;margin-top:10px;color:var(--muted)}
+    
+    /* Captain Badge */
+    .captain-badge {
+        display: none; /* Hidden by default */
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        background-color: var(--yellow);
+        color: #000;
+        font-weight: 700;
+        font-size: 10px;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+        text-align: center;
+    }
+    .player.captain .captain-badge {
+        display: block; /* Show badge for captain */
+    }
+    .player.captain {
+        border-color: var(--yellow); /* Highlight captain */
+    }
+
+    /* Team Info Card */
+    .team-info-card {
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        flex-wrap: wrap;
+    }
+    .info-box {
+        padding: 10px;
+        min-width: 150px;
+    }
+    .info-box h4 {
+        margin: 0 0 5px 0;
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+    .info-box h4 .edit-icon {
+        cursor: pointer;
+        font-size: 12px;
+        opacity: 0.6;
+        transition: opacity .3s;
+    }
+    .info-box h4 .edit-icon:hover {
+        opacity: 1;
+    }
+    .info-box p {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--accent);
+    }
+    .info-box p#team-name {
+        color: #fff; /* Team name in white */
+        cursor: pointer;
+    }
+    .info-box input#team-name-input {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid var(--accent);
+        color: white;
+        font-size: 18px;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 5px;
+        text-align: center;
+        width: 100%;
+    }
+
+    /* Modal Glassmorphism */
+    .modal {
+      position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);z-index:100;
+    }
+    .modal-content {
+      background:rgba(19,37,77,0.85);backdrop-filter:blur(10px);padding:24px;border-radius:var(--radius);max-width:400px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.6);position:relative;
+      color:#f8faff;transition:transform .4s ease, opacity .4s ease;
+    }
+    .modal-content img {width:100px;height:100px;border-radius:50%;margin-bottom:10px;border:2px solid var(--accent);}
+    .modal-content h3 {margin:0;color:var(--accent);display:flex;align-items:center;justify-content:center;gap:8px;}
+    .modal-content p {color:var(--muted)}
+    .tabs {display:flex;justify-content:space-around;margin-top:10px;border-bottom:1px solid rgba(255,255,255,0.2);}
+    .tab {padding:8px 12px;cursor:pointer;color:var(--muted);font-weight:600;transition:color .3s;border-bottom:2px solid transparent;}
+    .tab.active {color:var(--accent);border-bottom:2px solid var(--accent);}
+    .tab-content {margin-top:12px;display:none;}
+    .tab-content.active {display:block;}
+    .close-btn {background:none;border:none;color:white;font-size:18px;position:absolute;top:10px;right:20px;cursor:pointer;}
+    
+    .pitch-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .pitch-placeholder p {
+        font-size: 18px;
+        color: var(--muted);
+        text-align: center;
+    }
+
+    /* Responsive adjustment for small screens */
+    @media(max-width:900px){
+        header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .main-nav {
+            justify-content: space-around;
+            width: 100%;
+            order: 2;
+            margin-top: 10px;
+        }
+        .auth-nav {
+            order: 1;
+            align-self: flex-end;
+        }
+        nav a { margin: 0 5px; font-size: 14px; }
+        .pitch{height:400px}
+        .player{width:60px;height:80px;font-size:10px}
+        .team-info-card { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">UEFA Champions Fantasy</div>
+    <div class="main-nav">
+      <nav>
+        <a href="index.html" class="active">My Team</a>
+        <a href="fixtures.html">Fixtures</a>
+        <a href="stats.html">Player Stats</a>
+        <a href="transfers.html">Transfers</a>
+        <a href="leaderboard.html">Leaderboard</a>
+      </nav>
+    </div>
+    <div class="auth-nav">
+        <a href="login.html" class="btn" style="margin-top:0;padding:8px 12px;font-size:14px;">Log In</a>
+        <a href="signup.html" class="btn" style="margin-top:0;padding:8px 12px;font-size:14px;">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- Team Info Card (Story 3, 10) -->
+  <div class="card team-info-card">
+    <div class="info-box">
+        <h4>Team Name <span class="edit-icon" id="edit-team-name-icon" title="Edit team name">&#9998;</span></h4>
+        <p id="team-name">My Fantasy Team</p>
+    </div>
+    <div class="info-box">
+        <h4>Weekly Points</h4>
+        <p id="weekly-points">0</p>
+    </div>
+    <div class="info-box">
+        <h4>Total Points</h4>
+        <p id="total-points">0</p>
+    </div>
+  </div>
+
+  <!-- My Team Page Content -->
+  <section id="page-team">
+    <div class="card">
+      <h2>Pick Your Starting XI</h2>
+      <div class="formation">Formation: 4-3-3 (Default)</div>
+      <div class="pitch" id="pitch-container">
+        <!-- Players will be dynamically inserted here -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal -->
+  <div class="modal" id="player-modal">
+    <div class="modal-content">
+      <button class="close-btn">×</button>
+      <img id="modal-img" src="" alt="player photo">
+      <h3 id="modal-name"><img id="modal-club-logo" src="" width="30" height="30"> Player Name</h3>
+      <div class="tabs">
+        <div class="tab active" data-tab="overview">Overview</div>
+        <div class="tab" data-tab="recent">Recent Matches</div>
+        <div class="tab" data-tab="season">Season Stats</div>
+      </div>
+      <div class="tab-content active" id="overview-content">
+        <p id="modal-club"></p>
+        <p id="modal-position"></p>
+        <p id="modal-points"></p>
+      </div>
+      <div class="tab-content" id="recent-content">
+        <table id="recent-table"><tr><th>Match</th><th>Goals</th><th>Assists</th><th>Points</th></tr></table>
+      </div>
+      <div class="tab-content" id="season-content">
+        <p id="season-stats"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- Team Name Logic (Story 3) ---
+        const teamNameEl = document.getElementById('team-name');
+        const editIcon = document.getElementById('edit-team-name-icon');
+        const savedTeamName = localStorage.getItem('fantasyTeamName');
+        
+        if (savedTeamName) {
+            teamNameEl.textContent = savedTeamName;
+        }
+
+        function editTeamName() {
+            const currentName = teamNameEl.textContent;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = 'team-name-input';
+            input.value = currentName;
+            
+            teamNameEl.replaceWith(input);
+            input.focus();
+
+            input.addEventListener('blur', saveTeamName);
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    input.blur();
+                }
+            });
+        }
+
+        function saveTeamName() {
+            const input = document.getElementById('team-name-input');
+            const newName = input.value.trim() || 'My Fantasy Team';
+            
+            localStorage.setItem('fantasyTeamName', newName);
+            teamNameEl.textContent = newName;
+            input.replaceWith(teamNameEl);
+        }
+
+        teamNameEl.addEventListener('click', editTeamName);
+        editIcon.addEventListener('click', editTeamName);
+
+
+        // --- Squad & Pitch Logic (Story 2, 4, 10) ---
+        const pitch = document.getElementById('pitch-container');
+        const weeklyPointsEl = document.getElementById('weekly-points');
+        const totalPointsEl = document.getElementById('total-points');
+        let squad = JSON.parse(localStorage.getItem('fantasySquad')) || [];
+        let captain = localStorage.getItem('fantasyCaptain');
+
+        // Player layout positions (simple 4-3-3)
+        const positions = {
+            GK: [{ top: '5%', left: '45%' }],
+            DEF: [{ top: '25%', left: '10%' }, { top: '25%', left: '30%' }, { top: '25%', left: '60%' }, { top: '25%', left: '80%' }],
+            MID: [{ top: '45%', left: '25%' }, { top: '45%', left: '45%' }, { top: '45%', left: '65%' }],
+            FWD: [{ top: '65%', left: '25%' }, { top: '65%', left: '45%' }, { top: '65%', left: '65%' }]
+        };
+
+        let posCounters = { GK: 0, DEF: 0, MID: 0, FWD: 0 };
+        let totalPoints = 0;
+
+        if (squad.length === 0) {
+            pitch.innerHTML = `
+                <div class="pitch-placeholder">
+                    <p>Your team is empty.<br>Go to the Transfers page to buy players!</p>
+                    <a href="transfers.html" class="btn">Go to Transfers</a>
+                </div>
+            `;
+            // Set points to 0 if no squad
+            weeklyPointsEl.textContent = 0;
+            totalPointsEl.textContent = 0;
+        } else {
+            squad.forEach(playerData => {
+                const pos = playerData.position;
+                if (!positions[pos]) {
+                    console.warn(`Unknown position: ${pos} for player ${playerData.name}`);
+                    return;
+                }
+                
+                if (posCounters[pos] >= positions[pos].length) {
+                    // Failsafe if squad composition doesn't fit 4-3-3 (e.g., 5 defenders)
+                    console.warn(`No more spots for position: ${pos}`);
+                    return;
+                }
+
+                const layout = positions[pos][posCounters[pos]];
+                posCounters[pos]++;
+
+                const playerEl = document.createElement('div');
+                playerEl.className = 'player';
+                playerEl.style.top = layout.top;
+                playerEl.style.left = layout.left;
+                
+                // Add data attribute for modal
+                playerEl.dataset.player = JSON.stringify(playerData);
+                
+                // Check for captain
+                let playerPoints = playerData.points || 0; // Use points from data
+                if (playerData.name === captain) {
+                    playerEl.classList.add('captain');
+                    playerPoints *= 2; // Double points for captain
+                }
+
+                totalPoints += playerPoints;
+
+                playerEl.innerHTML = `
+                    <img src="${playerData.image}" onerror="this.onerror=null; this.src='https://placehold.co/50x50/333333/ffffff?text=${pos}'">
+                    ${pos}<br>${playerData.name}
+                    <span class="captain-badge">(C)</span>
+                `;
+
+                // Captain selection logic
+                playerEl.addEventListener('click', (e) => {
+                    // Check if the click is on the player element itself, not the modal trigger area
+                    if (e.target.classList.contains('player') || e.target.parentNode.classList.contains('player')) {
+                        // Set this player as captain
+                        captain = playerData.name;
+                        localStorage.setItem('fantasyCaptain', captain);
+                        
+                        // Update visuals and points
+                        updatePitchAndPoints();
+                    }
+                });
+                
+                // Attach modal listener
+                playerEl.addEventListener('click', () => openModal(playerData));
+
+                pitch.appendChild(playerEl);
+            });
+            // Initial points calculation
+            updatePitchAndPoints();
+        }
+
+
+        function updatePitchAndPoints() {
+            totalPoints = 0;
+            const allPlayers = pitch.querySelectorAll('.player');
+            
+            allPlayers.forEach(pEl => {
+                const pData = JSON.parse(pEl.dataset.player);
+                let pPoints = pData.points || 0;
+
+                if (pData.name === captain) {
+                    pEl.classList.add('captain');
+                    pPoints *= 2;
+                } else {
+                    pEl.classList.remove('captain');
+                }
+                totalPoints += pPoints;
+            });
+
+            weeklyPointsEl.textContent = totalPoints;
+            totalPointsEl.textContent = totalPoints; // Simulating total = weekly
+        }
+
+        // --- Modal Logic ---
+        const modal=document.getElementById('player-modal');
+        const modalImg=document.getElementById('modal-img');
+        const modalName=document.getElementById('modal-name');
+        const modalClubLogo=document.getElementById('modal-club-logo');
+        const modalClub=document.getElementById('modal-club');
+        const modalPos=document.getElementById('modal-position');
+        const modalPts=document.getElementById('modal-points');
+        const recentTable=document.getElementById('recent-table');
+        const seasonStats=document.getElementById('season-stats');
+        const closeBtn=document.querySelector('.close-btn');
+
+        function openModal(data) {
+            try {
+                modalImg.src=data.image;
+                modalImg.onerror = function() { this.src = 'https://placehold.co/100x100/333333/ffffff?text=' + data.position; };
+                modalClubLogo.src=data.clubLogo || 'https://placehold.co/30x30/333333/ffffff?text=Club';
+                modalClubLogo.onerror = function() { this.src = 'https://placehold.co/30x30/333333/ffffff?text=Club'; };
+                modalName.innerHTML=`<img id="modal-club-logo" src='${data.clubLogo || ''}' onerror="this.src='https://placehold.co/30x30/333333/ffffff?text=Club';" width='30' height='30'> ${data.name}`;
+                modalClub.textContent='Club: '+(data.club || 'N/A');
+                modalPos.textContent='Position: '+(data.position || 'N/A');
+                modalPts.textContent='Points: '+(data.points || 0);
+                
+                recentTable.innerHTML=`<tr><th>Match</th><th>Goals</th><th>Assists</th><th>Points</th></tr>`;
+                if (data.recentMatches && data.recentMatches.length > 0) {
+                    data.recentMatches.forEach(m=>{
+                        const tr=document.createElement('tr');
+                        tr.innerHTML=`<td>${m.match}</td><td>${m.goals}</td><td>${m.assists}</td><td>${m.points}</td>`;
+                        recentTable.appendChild(tr);
+                    });
+                } else {
+                    recentTable.innerHTML += `<tr><td colspan="4">No recent match data</td></tr>`;
+                }
+
+                const s = data.seasonStats || {};
+                seasonStats.innerHTML = `
+                    Minutes: ${s.minutes || 0}, Goals: ${s.goals || 0}, Assists: ${s.assists || 0}, 
+                    Yellow Cards: ${s.yellowCards || 0}, Red Cards: ${s.redCards || 0}
+                `;
+                
+                modal.style.display='flex';
+            } catch(e) {
+                console.error('Error parsing player data:', e);
+            }
+        }
+
+        document.querySelectorAll('.tab').forEach(tab=>{
+        tab.addEventListener('click',()=>{
+            document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+            tab.classList.add('active');
+            document.getElementById(tab.dataset.tab+'-content').classList.add('active');
+        });
+        });
+
+        closeBtn.addEventListener('click',()=>{modal.style.display='none';});
+        modal.addEventListener('click',e=>{if(e.target===modal) modal.style.display='none';});
+    });
+  </script>
+</body>
+</html>

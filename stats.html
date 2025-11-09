@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UEFA Champions Fantasy - Player Stats</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0a1633;
+      --card:#13254d;
+      --accent:#1e90ff;
+      --muted:#a8b4cc;
+      --radius:14px;
+      font-family:'Inter',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    }
+    *{box-sizing:border-box}
+    body {
+      margin:0;
+      background:radial-gradient(ellipse at top,#101f44 0%,#060d1e 80%);
+      color:#f8faff;
+      padding:20px;
+      overflow-x:hidden;
+      min-height: 100vh;
+    }
+    header {
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:24px;
+    }
+    .logo {font-weight:700;font-size:22px;color:var(--accent);margin-right: 20px;}
+    .main-nav {
+        display: flex;
+        flex-grow: 1;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    .auth-nav {
+        display: flex;
+        gap: 10px;
+    }
+    nav a {text-decoration:none;color:var(--muted);margin-left:16px;font-weight:600;cursor:pointer;transition:color .3s;}
+    nav a:hover { color: #fff; }
+    nav a.active {color:var(--accent);}
+    /* Card, Button, Table styles */
+    .card {
+      background:var(--card);
+      padding:16px;
+      border-radius:var(--radius);
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);
+      margin-bottom:20px;
+    }
+    .card h3,h2{margin-top:0;color:var(--accent)}
+    table{width:100%;border-collapse:collapse;color:inherit}
+    th,td{padding:10px 8px;text-align:left}
+    tr+tr td{border-top:1px solid rgba(255,255,255,0.1)}
+    .btn {background:var(--accent);color:white;padding:10px 16px;border:none;border-radius:var(--radius);font-weight:700;cursor:pointer;margin-top:10px;transition:background .3s;}
+    .btn:hover:not(:disabled) { background: #1871cc; }
+    .btn:disabled {opacity:0.5;cursor:not-allowed;}
+    .player-stat {
+      cursor: pointer;
+      transition: background .2s;
+    }
+    .player-stat:hover {
+        background: rgba(255,255,255,0.05); /* FR 7.2 */
+    }
+    .player-stat img {
+      border: 2px solid var(--accent);
+      margin-bottom: 5px;
+    }
+
+    /* Modal (FR 7.1) */
+    .modal {
+      position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);z-index:100;
+    }
+    .modal-content {
+      background:rgba(19,37,77,0.85);backdrop-filter:blur(10px);padding:24px;border-radius:var(--radius);max-width:400px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.6);position:relative;
+      color:#f8faff;transition:transform .4s ease, opacity .4s ease;
+    }
+    .modal-content img {width:100px;height:100px;border-radius:50%;margin-bottom:10px;border:2px solid var(--accent);}
+    .modal-content h3 {margin:0;color:var(--accent);display:flex;align-items:center;justify-content:center;gap:8px;}
+    .modal-content p {color:var(--muted)}
+    .tabs {display:flex;justify-content:space-around;margin-top:10px;border-bottom:1px solid rgba(255,255,255,0.2);}
+    .tab {padding:8px 12px;cursor:pointer;color:var(--muted);font-weight:600;transition:color .3s;border-bottom:2px solid transparent;}
+    .tab.active {color:var(--accent);border-bottom:2px solid var(--accent);}
+    .tab-content {margin-top:12px;display:none;}
+    .tab-content.active {display:block;}
+    .close-btn {background:none;border:none;color:white;font-size:18px;position:absolute;top:10px;right:20px;cursor:pointer;}
+    /* Responsive adjustment for small screens */
+    @media(max-width:900px){
+        header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .main-nav {
+            justify-content: space-around;
+            width: 100%;
+            order: 2;
+            margin-top: 10px;
+        }
+        .auth-nav {
+            order: 1;
+            align-self: flex-end;
+        }
+        nav a { margin: 0 5px; font-size: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">UEFA Champions Fantasy</div>
+    <div class="main-nav">
+      <nav>
+        <a href="index.html">My Team</a>
+        <a href="fixtures.html">Fixtures</a>
+        <a href="stats.html" class="active">Player Stats</a>
+        <a href="transfers.html">Transfers</a>
+        <a href="leaderboard.html">Leaderboard</a>
+      </nav>
+    </div>
+    <div class="auth-nav">
+        <a href="login.html" class="btn" style="margin-top:0;padding:8px 12px;font-size:14px;">Log In</a>
+        <a href="signup.html" class="btn" style="margin-top:0;padding:8px 12px;font-size:14px;">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- Player Stats Page Content (FR 7.1) -->
+  <section id="page-stats">
+    <div class="card">
+      <h2>Player Stats</h2>
+      <div class="players-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:16px;">
+        <!-- Player Cards for Stats (Clickable to open modal) -->
+        <div class="player-stat" data-player='{"name":"Courtois","club":"Real Madrid","clubLogo":"https://upload.wikimedia.org/wikipedia/en/c/ca/Real_Madrid_CF.svg","position":"GK","points":8,"image":"https://upload.wikimedia.org/wikipedia/commons/3/3b/Thibaut_Courtois_2018.jpg","recentMatches":[{"match":"vs PSG","goals":0,"assists":0,"points":6},{"match":"vs Chelsea","goals":0,"assists":0,"points":7},{"match":"vs Bayern","goals":0,"assists":0,"points":8}],"seasonStats":{"minutes":900,"goals":0,"assists":0,"yellowCards":0,"redCards":0}}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3b/Thibaut_Courtois_2018.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=GK';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Courtois</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"Ederson", "club":"Man City", "position":"GK", "points": 6, "price": 6.5, "image":"https://upload.wikimedia.org/wikipedia/commons/c/c4/Ederson_Moraes_2018.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c4/Ederson_Moraes_2018.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=GK';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Ederson</p>
+        </div>
+
+        <div class="player-stat" data-player='{"name":"Carvajal", "club":"Real Madrid", "position":"DEF", "points": 7, "price": 6.5, "image":"https://upload.wikimedia.org/wikipedia/commons/e/ea/Dani_Carvajal_2018.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/e/ea/Dani_Carvajal_2018.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=DF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Carvajal</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"Robertson", "club":"Liverpool", "position":"DEF", "points": 9, "price": 7.0, "image":"https://upload.wikimedia.org/wikipedia/commons/2/25/Andy_Robertson_2018.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/25/Andy_Robertson_2018.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=DF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Robertson</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"R. Araújo", "club":"Barcelona", "position":"DEF", "points": 6, "price": 6.0, "image":"https://upload.wikimedia.org/wikipedia/commons/6/60/Araujo_2023.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/6/60/Araujo_2023.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=DF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">R. Araújo</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"T. Hernández", "club":"AC Milan", "position":"DEF", "points": 7, "price": 6.5, "image":"https://upload.wikimedia.org/wikipedia/commons/b/b8/Theo_Hern%C3%A1ndez_2021.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/Theo_Hern%C3%A1ndez_2021.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=DF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">T. Hernández</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"A. Davies", "club":"Bayern", "position":"DEF", "points": 8, "price": 7.0, "image":"https://upload.wikimedia.org/wikipedia/commons/8/86/Alphonso_Davies_2023.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Alphonso_Davies_2023.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=DF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">A. Davies</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"W. Saliba", "club":"Arsenal", "position":"DEF", "points": 6, "price": 6.0, "image":"https://upload.wikimedia.org/wikipedia/commons/a/a2/William_Saliba_2023.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/William_Saliba_2023.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=DF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">W. Saliba</p>
+        </div>
+
+        <div class="player-stat" data-player='{"name":"De Bruyne","club":"Man City","clubLogo":"https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg","position":"MID","points":10,"image":"https://upload.wikimedia.org/wikipedia/commons/4/4b/Kevin_De_Bruyne_2018.jpg","recentMatches":[{"match":"vs Bayern","goals":1,"assists":2,"points":12}],"seasonStats":{"minutes":910,"goals":6,"assists":10,"yellowCards":0,"redCards":0}}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Kevin_De_Bruyne_2018.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=MF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">De Bruyne</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"Jude Bellingham","club":"Real Madrid","position":"MID","points":10,"image":"https://upload.wikimedia.org/wikipedia/commons/3/3a/Jude_Bellingham_2023.jpg","recentMatches":[{"match":"vs PSG","goals":1,"assists":1,"points":10}],"seasonStats":{"minutes":910,"goals":4,"assists":5,"yellowCards":1,"redCards":0}}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Jude_Bellingham_2023.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=MF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Jude Bellingham</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"Kimmich","club":"Bayern","clubLogo":"https://upload.wikimedia.org/wikipedia/en/1/1f/FC_Bayern_München_logo_%282017%29.svg","position":"MID","points":7,"image":"https://upload.wikimedia.org/wikipedia/commons/5/58/Joshua_Kimmich_2018.jpg","recentMatches":[{"match":"vs Man City","goals":0,"assists":1,"points":7}],"seasonStats":{"minutes":880,"goals":2,"assists":5,"yellowCards":1,"redCards":0}}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/58/Joshua_Kimmich_2018.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=MF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Kimmich</p>
+        </div>
+         <div class="player-stat" data-player='{"name":"Rodri", "club":"Man City", "position":"MID", "points": 7, "price": 8.0, "image":"https://upload.wikimedia.org/wikipedia/commons/3/30/Rodri_2023.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/30/Rodri_2023.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=MF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Rodri</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"Musiala", "club":"Bayern", "position":"MID", "points": 8, "price": 9.0, "image":"https://upload.wikimedia.org/wikipedia/commons/3/3c/Jamal_Musiala_2023.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Jamal_Musiala_2023.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=MF';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Musiala</p>
+        </div>
+        
+        <div class="player-stat" data-player='{"name":"Mbappé","club":"PSG","clubLogo":"https://upload.wikimedia.org/wikipedia/en/a/a7/Paris_Saint-Germain_F.C..svg","position":"FWD","points":12,"image":"https://upload.wikimedia.org/wikipedia/commons/a/a5/Kylian_Mbapp%C3%A9_2018.jpg","recentMatches":[{"match":"vs Real Madrid","goals":2,"assists":1,"points":12},{"match":"vs Chelsea","goals":1,"assists":0,"points":8},{"match":"vs Bayern","goals":0,"assists":2,"points":9}],"seasonStats":{"minutes":950,"goals":10,"assists":7,"yellowCards":1,"redCards":0}}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Kylian_Mbapp%C3%A9_2018.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=FW';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Mbappé</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"Haaland","club":"Man City","clubLogo":"https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg","position":"FWD","points":15,"image":"https://upload.wikimedia.org/wikipedia/commons/d/d2/Erling_Haaland_2023.jpg","recentMatches":[{"match":"vs Bayern","goals":3,"assists":0,"points":15}],"seasonStats":{"minutes":940,"goals":12,"assists":3,"yellowCards":0,"redCards":0}}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/d/d2/Erling_Haaland_2023.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=FW';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Haaland</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"Vinicius Jr","club":"Real Madrid","clubLogo":"https://upload.wikimedia.org/wikipedia/en/c/ca/Real_Madrid_CF.svg","position":"FWD","points":11,"image":"https://upload.wikimedia.org/wikipedia/commons/2/2d/Vinicius_Junior_2023.jpg","recentMatches":[{"match":"vs PSG","goals":1,"assists":2,"points":11}],"seasonStats":{"minutes":920,"goals":8,"assists":9,"yellowCards":0,"redCards":0}}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/2/2d/Vinicius_Junior_2023.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=FW';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Vinícius Jr</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"Rafael Leão", "club":"AC Milan", "position":"FWD", "points": 7, "price": 8.5, "image":"https://upload.wikimedia.org/wikipedia/commons/4/45/Rafael_Le%C3%A3o_2022.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Rafael_Le%C3%A3o_2022.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=FW';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">Rafael Leão</p>
+        </div>
+        <div class="player-stat" data-player='{"name":"L. Martínez", "club":"Inter Milan", "position":"FWD", "points": 9, "price": 9.5, "image":"https://upload.wikimedia.org/wikipedia/commons/a/a1/Lautaro_Mart%C3%ADnez_2023.jpg"}'>
+          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Lautaro_Mart%C3%ADnez_2023.jpg" onerror="this.onerror=null; this.src='https://placehold.co/80x80/333333/ffffff?text=FW';" style="width:80px;height:80px;border-radius:50%;border:2px solid var(--accent);">
+          <p style="text-align:center;font-weight:600;">L. Martínez</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal (FR 7.1) -->
+  <div class="modal" id="player-modal">
+    <div class="modal-content">
+      <button class="close-btn">×</button>
+      <img id="modal-img" src="" alt="player photo">
+      <h3 id="modal-name"><img id="modal-club-logo" src="" width="30" height="30"> Player Name</h3>
+      <div class="tabs">
+        <div class="tab active" data-tab="overview">Overview</div>
+        <div class="tab" data-tab="recent">Recent Matches</div>
+        <div class="tab" data-tab="season">Season Stats</div>
+      </div>
+      <div class="tab-content active" id="overview-content">
+        <p id="modal-club"></p>
+        <p id="modal-position"></p>
+        <p id="modal-points"></p>
+      </div>
+      <div class="tab-content" id="recent-content">
+        <table id="recent-table"><tr><th>Match</th><th>Goals</th><th>Assists</th><th>Points</th></tr></table>
+      </div>
+      <div class="tab-content" id="season-content">
+        <p id="season-stats"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Modal Logic (FR 7.2) ---
+    const modal=document.getElementById('player-modal');
+    const modalImg=document.getElementById('modal-img');
+    const modalName=document.getElementById('modal-name');
+    const modalClubLogo=document.getElementById('modal-club-logo');
+    const modalClub=document.getElementById('modal-club');
+    const modalPos=document.getElementById('modal-position');
+    const modalPts=document.getElementById('modal-points');
+    const recentTable=document.getElementById('recent-table');
+    const seasonStats=document.getElementById('season-stats');
+    const closeBtn=document.querySelector('.close-btn');
+
+    document.querySelectorAll('.player-stat').forEach(p=>{
+      p.addEventListener('click',()=>{
+        try {
+          const data=JSON.parse(p.dataset.player);
+          modalImg.src=data.image;
+          modalImg.onerror = function() { this.src = 'https://placehold.co/100x100/333333/ffffff?text=' + data.position; };
+          modalClubLogo.src=data.clubLogo || 'https://placehold.co/30x30/333333/ffffff?text=Club';
+          modalClubLogo.onerror = function() { this.src = 'https://placehold.co/30x30/333333/ffffff?text=Club'; };
+          modalName.innerHTML=`<img id="modal-club-logo" src='${data.clubLogo || ''}' onerror="this.src='https://placehold.co/30x30/333333/ffffff?text=Club';" width='30' height='30'> ${data.name}`;
+          modalClub.textContent='Club: '+(data.club || 'N/A');
+          modalPos.textContent='Position: '+(data.position || 'N/A');
+          modalPts.textContent='Points: '+(data.points || 0);
+          
+          recentTable.innerHTML=`<tr><th>Match</th><th>Goals</th><th>Assists</th><th>Points</th></tr>`;
+          if (data.recentMatches && data.recentMatches.length > 0) {
+            data.recentMatches.forEach(m=>{
+                const tr=document.createElement('tr');
+                tr.innerHTML=`<td>${m.match}</td><td>${m.goals}</td><td>${m.assists}</td><td>${m.points}</td>`;
+                recentTable.appendChild(tr);
+            });
+          } else {
+            recentTable.innerHTML += `<tr><td colspan="4">No recent match data</td></tr>`;
+          }
+          const s=data.seasonStats || {};
+          seasonStats.innerHTML=`Minutes: ${s.minutes || 0}, Goals: ${s.goals || 0}, Assists: ${s.assists || 0}, Yellow Cards: ${s.yellowCards || 0}, Red Cards: ${s.redCards || 0}`;
+          modal.style.display='flex';
+        } catch(e) {
+            console.error('Error parsing player data:', e);
+        }
+      });
+    });
+
+    document.querySelectorAll('.tab').forEach(tab=>{
+      tab.addEventListener('click',()=>{
+        document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab+'-content').classList.add('active');
+      });
+    });
+
+    closeBtn.addEventListener('click',()=>{modal.style.display='none';});
+    modal.addEventListener('click',e=>{if(e.target===modal) modal.style.display='none';});
+  </script>
+</body>
+</html>

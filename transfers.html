@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>UEFA Champions Fantasy - Transfers</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:#0a1633;
+      --card:#13254d;
+      --accent:#1e90ff;
+      --muted:#a8b4cc;
+      --radius:14px;
+      font-family:'Inter',system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;
+    }
+    *{box-sizing:border-box}
+    body {
+      margin:0;
+      background:radial-gradient(ellipse at top,#101f44 0%,#060d1e 80%);
+      color:#f8faff;
+      padding:20px;
+      overflow-x:hidden;
+      min-height: 100vh;
+    }
+    header {
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:24px;
+    }
+    .logo {font-weight:700;font-size:22px;color:var(--accent);margin-right: 20px;}
+    .main-nav {
+        display: flex;
+        flex-grow: 1;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+    .auth-nav {
+        display: flex;
+        gap: 10px;
+    }
+    nav a {text-decoration:none;color:var(--muted);margin-left:16px;font-weight:600;cursor:pointer;transition:color .3s;}
+    nav a:hover { color: #fff; }
+    nav a.active {color:var(--accent);}
+    /* Card, Button, Table styles */
+    .card {
+      background:var(--card);
+      padding:16px;
+      border-radius:var(--radius);
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);
+      margin-bottom:20px;
+    }
+    .card h3,h2{margin-top:0;color:var(--accent)}
+    table{width:100%;border-collapse:collapse;color:inherit}
+    th,td{padding:10px 8px;text-align:left}
+    tr+tr td{border-top:1px solid rgba(255,255,255,0.1)}
+    .btn {background:var(--accent);color:white;padding:10px 16px;border:none;border-radius:var(--radius);font-weight:700;cursor:pointer;margin-top:10px;transition:background .3s;}
+    .btn.btn-sell { background: #e53935; } /* Sell button color */
+    .btn:hover:not(:disabled) { background: #1871cc; }
+    .btn.btn-sell:hover:not(:disabled) { background: #c62828; }
+    .btn:disabled {opacity:0.5;cursor:not-allowed;}
+
+    /* Budget Card (FR 6.1) */
+    .budget-card {
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        flex-wrap: wrap;
+    }
+    .budget-box {
+        padding: 10px;
+        min-width: 150px;
+    }
+    .budget-box h4 {
+        margin: 0 0 5px 0;
+        color: var(--muted);
+        font-weight: 600;
+        font-size: 14px;
+    }
+    .budget-box p {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #fff;
+    }
+    .budget-box p#remaining-budget.negative {
+        color: #e53935; /* Red if negative */
+    }
+
+    /* Filter Buttons (FR 5.1) */
+    .filter-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    .filter-btn {
+        background: none;
+        border: 2px solid var(--accent);
+        color: var(--accent);
+        padding: 8px 12px;
+        border-radius: var(--radius);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .3s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+        background: var(--accent);
+        color: white;
+    }
+    
+    /* Responsive adjustment for small screens */
+    @media(max-width:900px){
+        header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .main-nav {
+            justify-content: space-around;
+            width: 100%;
+            order: 2;
+            margin-top: 10px;
+        }
+        .auth-nav {
+            order: 1;
+            align-self: flex-end;
+        }
+        nav a { margin: 0 5px; font-size: 14px; }
+        .budget-card { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">UEFA Champions Fantasy</div>
+    <div class="main-nav">
+      <nav>
+        <a href="index.html">My Team</a>
+        <a href="fixtures.html">Fixtures</a>
+        <a href="stats.html">Player Stats</a>
+        <a href="transfers.html" class="active">Transfers</a>
+        <a href="leaderboard.html">Leaderboard</a>
+      </nav>
+    </div>
+    <div class="auth-nav">
+        <a href="login.html" class="btn" style="margin-top:0;padding:8px 12px;font-size:14px;">Log In</a>
+        <a href="signup.html" class="btn" style="margin-top:0;padding:8px 12px;font-size:14px;">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- Budget Card (FR 6.1) -->
+  <div class="card budget-card">
+    <div class="budget-box">
+        <h4>Total Budget</h4>
+        <p id="total-budget">€100.0m</p>
+    </div>
+    <div class="budget-box">
+        <h4>Squad Players</h4>
+        <p><span id="squad-count">0</span> / 11</p>
+    </div>
+    <div class="budget-box">
+        <h4>Remaining Budget</h4>
+        <p id="remaining-budget">€100.0m</p>
+    </div>
+  </div>
+
+  <!-- Transfers Page Content (FR 2, 5, 6) -->
+  <section id="page-transfers">
+    <div class="card">
+      <h2>Transfer Market</h2>
+
+      <!-- Filter Controls (FR 5.1) -->
+      <div class="filter-controls">
+        <button class="filter-btn active" data-filter="All">All</button>
+        <button class="filter-btn" data-filter="GK">Goalkeepers</button>
+        <button class="filter-btn" data-filter="DEF">Defenders</button>
+        <button class="filter-btn" data-filter="MID">Midfielders</button>
+        <button class="filter-btn" data-filter="FWD">Forwards</button>
+      </div>
+
+      <table id="transfer-table">
+        <thead>
+          <tr><th>Player</th><th>Club</th><th>Pos</th><th>Price (€m)</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          <!-- Player JSON data is now stored in data-player attribute -->
+          <tr class="player-row" data-position="GK" data-price="7.0" data-player-name="Courtois" 
+              data-player='{"name":"Courtois", "club":"Real Madrid", "position":"GK", "points": 8, "price": 7.0, "image":"https://upload.wikimedia.org/wikipedia/commons/3/3b/Thibaut_Courtois_2018.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/3/3b/Thibaut_Courtois_2018.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=TC'"> Courtois</td>
+            <td>Real Madrid</td>
+            <td>GK</td>
+            <td>7.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="GK" data-price="6.5" data-player-name="Ederson"
+              data-player='{"name":"Ederson", "club":"Man City", "position":"GK", "points": 6, "price": 6.5, "image":"https://upload.wikimedia.org/wikipedia/commons/c/c4/Ederson_Moraes_2018.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/c/c4/Ederson_Moraes_2018.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=ED'"> Ederson</td>
+            <td>Man City</td>
+            <td>GK</td>
+            <td>6.5</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          
+          <tr class="player-row" data-position="DEF" data-price="6.5" data-player-name="Carvajal"
+              data-player='{"name":"Carvajal", "club":"Real Madrid", "position":"DEF", "points": 7, "price": 6.5, "image":"https://upload.wikimedia.org/wikipedia/commons/e/ea/Dani_Carvajal_2018.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/e/ea/Dani_Carvajal_2018.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=DC'"> Carvajal</td>
+            <td>Real Madrid</td>
+            <td>DEF</td>
+            <td>6.5</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+           <tr class="player-row" data-position="DEF" data-price="7.0" data-player-name="Robertson"
+              data-player='{"name":"Robertson", "club":"Liverpool", "position":"DEF", "points": 9, "price": 7.0, "image":"https://upload.wikimedia.org/wikipedia/commons/2/25/Andy_Robertson_2018.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/2/25/Andy_Robertson_2018.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=AR'"> Robertson</td>
+            <td>Liverpool</td>
+            <td>DEF</td>
+            <td>7.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="DEF" data-price="6.0" data-player-name="R. Araújo"
+              data-player='{"name":"R. Araújo", "club":"Barcelona", "position":"DEF", "points": 6, "price": 6.0, "image":"https://upload.wikimedia.org/wikipedia/commons/6/60/Araujo_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/6/60/Araujo_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=RA'"> R. Araújo</td>
+            <td>Barcelona</td>
+            <td>DEF</td>
+            <td>6.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="DEF" data-price="6.5" data-player-name="T. Hernández"
+              data-player='{"name":"T. Hernández", "club":"AC Milan", "position":"DEF", "points": 7, "price": 6.5, "image":"https://upload.wikimedia.org/wikipedia/commons/b/b8/Theo_Hern%C3%A1ndez_2021.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/Theo_Hern%C3%A1ndez_2021.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=TH'"> T. Hernández</td>
+            <td>AC Milan</td>
+            <td>DEF</td>
+            <td>6.5</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+           <tr class="player-row" data-position="DEF" data-price="7.0" data-player-name="A. Davies"
+              data-player='{"name":"A. Davies", "club":"Bayern", "position":"DEF", "points": 8, "price": 7.0, "image":"https://upload.wikimedia.org/wikipedia/commons/8/86/Alphonso_Davies_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Alphonso_Davies_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=AD'"> A. Davies</td>
+            <td>Bayern</td>
+            <td>DEF</td>
+            <td>7.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="DEF" data-price="6.0" data-player-name="W. Saliba"
+              data-player='{"name":"W. Saliba", "club":"Arsenal", "position":"DEF", "points": 6, "price": 6.0, "image":"https://upload.wikimedia.org/wikipedia/commons/a/a2/William_Saliba_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/William_Saliba_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=WS'"> W. Saliba</td>
+            <td>Arsenal</td>
+            <td>DEF</td>
+            <td>6.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+
+          <tr class="player-row" data-position="MID" data-price="11.0" data-player-name="Jude Bellingham" 
+              data-player='{"name":"Jude Bellingham", "club":"Real Madrid", "position":"MID", "points": 10, "price": 11.0, "image":"https://upload.wikimedia.org/wikipedia/commons/3/3a/Jude_Bellingham_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Jude_Bellingham_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=JB'"> Jude Bellingham</td>
+            <td>Real Madrid</td>
+            <td>MID</td>
+            <td>11.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="MID" data-price="9.5" data-player-name="Phil Foden"
+              data-player='{"name":"Phil Foden", "club":"Man City", "position":"MID", "points": 8, "price": 9.5, "image":"https://upload.wikimedia.org/wikipedia/commons/0/09/Phil_Foden_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/0/09/Phil_Foden_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=PF'"> Phil Foden</td>
+            <td>Man City</td>
+            <td>MID</td>
+            <td>9.5</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="MID" data-price="10.0" data-player-name="De Bruyne"
+              data-player='{"name":"De Bruyne", "club":"Man City", "position":"MID", "points": 10, "price": 10.0, "image":"https://upload.wikimedia.org/wikipedia/commons/4/4b/Kevin_De_Bruyne_2018.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/Kevin_De_Bruyne_2018.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=KB'"> De Bruyne</td>
+            <td>Man City</td>
+            <td>MID</td>
+            <td>10.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="MID" data-price="8.0" data-player-name="Rodri"
+              data-player='{"name":"Rodri", "club":"Man City", "position":"MID", "points": 7, "price": 8.0, "image":"https://upload.wikimedia.org/wikipedia/commons/3/30/Rodri_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/3/30/Rodri_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=RD'"> Rodri</td>
+            <td>Man City</td>
+            <td>MID</td>
+            <td>8.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="MID" data-price="9.0" data-player-name="Musiala"
+              data-player='{"name":"Musiala", "club":"Bayern", "position":"MID", "points": 8, "price": 9.0, "image":"https://upload.wikimedia.org/wikipedia/commons/3/3c/Jamal_Musiala_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Jamal_Musiala_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=JM'"> Musiala</td>
+            <td>Bayern</td>
+            <td>MID</td>
+            <td>9.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+
+          <tr class="player-row" data-position="FWD" data-price="8.5" data-player-name="Rafael Leão"
+              data-player='{"name":"Rafael Leão", "club":"AC Milan", "position":"FWD", "points": 7, "price": 8.5, "image":"https://upload.wikimedia.org/wikipedia/commons/4/45/Rafael_Le%C3%A3o_2022.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Rafael_Le%C3%A3o_2022.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=RL'"> Rafael Leão</td>
+            <td>AC Milan</td>
+            <td>FWD</td>
+            <td>8.5</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="FWD" data-price="12.5" data-player-name="Mbappé"
+              data-player='{"name":"Mbappé", "club":"PSG", "position":"FWD", "points": 12, "price": 12.5, "image":"https://upload.wikimedia.org/wikipedia/commons/a/a5/Kylian_Mbapp%C3%A9_2018.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/Kylian_Mbapp%C3%A9_2018.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=KM'"> Mbappé</td>
+            <td>PSG</td>
+            <td>FWD</td>
+            <td>12.5</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="FWD" data-price="12.0" data-player-name="Haaland"
+              data-player='{"name":"Haaland", "club":"Man City", "position":"FWD", "points": 15, "price": 12.0, "image":"https://upload.wikimedia.org/wikipedia/commons/d/d2/Erling_Haaland_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/d/d2/Erling_Haaland_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=EH'"> Haaland</td>
+            <td>Man City</td>
+            <td>FWD</td>
+            <td>12.0</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+          <tr class="player-row" data-position="FWD" data-price="10.5" data-player-name="Vinicius Jr"
+              data-player='{"name":"Vinicius Jr", "club":"Real Madrid", "position":"FWD", "points": 11, "price": 10.5, "image":"https://upload.wikimedia.org/wikipedia/commons/2/2d/Vinicius_Junior_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/2/2d/Vinicius_Junior_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=VJ'"> Vinicius Jr</td>
+            <td>Real Madrid</td>
+            <td>FWD</td>
+            <td>10.5</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+           <tr class="player-row" data-position="FWD" data-price="9.5" data-player-name="L. Martínez"
+              data-player='{"name":"L. Martínez", "club":"Inter Milan", "position":"FWD", "points": 9, "price": 9.5, "image":"https://upload.wikimedia.org/wikipedia/commons/a/a1/Lautaro_Mart%C3%ADnez_2023.jpg"}'>
+            <td><img src="https://upload.wikimedia.org/wikipedia/commons/a/a1/Lautaro_Mart%C3%ADnez_2023.jpg" width="30" onerror="this.onerror=null; this.src='https://placehold.co/30x30/333333/ffffff?text=LM'"> L. Martínez</td>
+            <td>Inter Milan</td>
+            <td>FWD</td>
+            <td>9.5</td>
+            <td><button class="btn transfer-btn" data-action="buy">Buy</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const totalBudget = 100.0;
+        const maxSquadSize = 11;
+        
+        // Load from localStorage or set defaults
+        let squad = JSON.parse(localStorage.getItem('fantasySquad')) || [];
+        let remainingBudget = parseFloat(localStorage.getItem('fantasyBudget') || totalBudget.toFixed(1));
+
+        const remainingBudgetEl = document.getElementById('remaining-budget');
+        const squadCountEl = document.getElementById('squad-count');
+        const transferButtons = document.querySelectorAll('.transfer-btn');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const playerRows = document.querySelectorAll('.player-row');
+
+        // --- Budget and Squad Logic (FR 2, 6) ---
+        function updateBudgetAndSquad() {
+            remainingBudgetEl.textContent = `€${remainingBudget.toFixed(1)}m`;
+            squadCountEl.textContent = squad.length;
+
+            if (remainingBudget < 0) {
+                remainingBudgetEl.classList.add('negative');
+            } else {
+                remainingBudgetEl.classList.remove('negative');
+            }
+
+            // Update button states
+            transferButtons.forEach(btn => {
+                const row = btn.closest('tr');
+                const playerName = row.dataset.playerName;
+                const price = parseFloat(row.dataset.price);
+                const isBought = squad.some(player => player.name === playerName);
+
+                if (isBought) {
+                    btn.textContent = 'Sell';
+                    btn.dataset.action = 'sell';
+                    btn.classList.add('btn-sell');
+                    btn.disabled = false;
+                } else {
+                    btn.textContent = 'Buy';
+                    btn.dataset.action = 'buy';
+                    btn.classList.remove('btn-sell');
+                    
+                    // FR 2.2: Prevent selecting more than 11
+                    if (squad.length >= maxSquadSize) {
+                        btn.disabled = true;
+                        btn.textContent = 'Squad Full';
+                    } 
+                    // FR 6.2: Prevent selecting if budget exceeds limit
+                    else if (price > remainingBudget) {
+                        btn.disabled = true;
+                        btn.textContent = 'Too Costly';
+                    }
+                    else {
+                        btn.disabled = false;
+                    }
+                }
+            });
+
+            // Save to localStorage
+            localStorage.setItem('fantasySquad', JSON.stringify(squad));
+            localStorage.setItem('fantasyBudget', remainingBudget.toFixed(1));
+        }
+
+        transferButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const row = button.closest('tr');
+                const price = parseFloat(row.dataset.price);
+                const playerName = row.dataset.playerName;
+                
+                if (button.dataset.action === 'buy') {
+                    // --- Buy Player --- (FR 2.1)
+                    if (squad.length < maxSquadSize && remainingBudget >= price) {
+                        const playerData = JSON.parse(row.dataset.player);
+                        remainingBudget -= price;
+                        squad.push(playerData); // Add full player object
+                    }
+                } else {
+                    // --- Sell Player ---
+                    remainingBudget += price;
+                    squad = squad.filter(player => player.name !== playerName); // Remove player from array
+                }
+                updateBudgetAndSquad();
+            });
+        });
+
+        // --- Filter Logic (FR 5.2) ---
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+
+                const filter = button.dataset.filter;
+
+                playerRows.forEach(row => {
+                    if (filter === 'All' || row.dataset.position === filter) {
+                        row.style.display = 'table-row';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // Initial setup on page load
+        updateBudgetAndSquad();
+    });
+  </script>
+
+</body>
+</html>
